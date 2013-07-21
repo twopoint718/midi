@@ -5,6 +5,7 @@ module Midi where
 import BitTools
 import Data.Binary.Put
 import Data.Bits ((.&.), setBit, shiftR)
+import Data.ByteString.Char8
 import Data.Word
 import qualified Data.ByteString.Lazy as BL
 
@@ -58,7 +59,7 @@ writeMidiHeader = do
   putWord32be   6      -- chunk size (3 Word16s)
   putWord16be   0      -- midi format (zero is easy)
   putWord16be   1      -- number of tracks
-  putWord16be   48     -- time division (48 ticks/quarter note)
+  putWord16be   480    -- time division (480 ticks/quarter note)
 
 writeTrackChunk :: Word32 -> Put
 writeTrackChunk len = do
@@ -117,14 +118,14 @@ noteOnEvent = do
   putWord8 1           -- delta time (TODO: Variable Length Value)
   putWord8 0x90        -- 0x9_ = "Note on", 0x_0 = channel 0
   putWord8 60          -- middle C
-  putWord8 127         -- max velocity
+  putWord8 105         -- max velocity
 
 noteOffEvent :: Put
 noteOffEvent = do
   putWord16be 0x816f   -- TODO: var length (239)
   putWord8 0x80        -- 0x8_ = "Note off", 0x_0 = channel 0
   putWord8 60          -- middle C
-  putWord8 127         -- max velocity
+  putWord8 0           -- max velocity
 
 {- End of track
 

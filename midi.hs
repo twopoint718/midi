@@ -21,11 +21,36 @@ import qualified Data.ByteString.Lazy as BL
 varLenQuantity :: Int -> Int
 varLenQuantity n
   | n < 0     = undefined -- fix
-  | n < 2^7   = n
-  | n < 2^14  = 
-  | n < 2^21  =
-  | n < 2^28  =
+  | n < 2^7   = pack7Bits n
+  | n < 2^14  = multiByte $ pack14Bits n
+  | n < 2^21  = multiByte $ pack21Bits n
+  | n < 2^28  = multiByte $ pack28Bits n
   | otherwise = undefined -- fix
+
+-- sets the high bit of the first byte (signifies multibyte)
+multiByte :: [Word8] -> [Word8]
+multibyte (x:xs) = setBit x 8 : xs
+
+pack7Bits :: Int -> [Word8]
+pack7Bits n = [n .&. 0x7f]
+
+pack14Bits :: Int -> [Word8]
+pack14Bits n = [ shiftR (n .&. 0x3f80) 7
+               , pack7Bits n
+               ]
+
+pack21Bits :: Int -> [Word8]
+pack21Bits n = [ shiftR (n .&. 0x1fc000) 14
+               , pack14Bits n
+               , pack7Bits n
+               ]
+
+pack28Bits :: Int -> [Word8]
+pack28Bits n = [ shiftR (n .&. 0x0fe00000) 21
+               , pack21Bits n
+               , pack14Bits n
+               , pack7Bits n
+               ]
 
 writeMidiHeader :: Put
 writeMidiHeader = do
@@ -40,26 +65,75 @@ writeTrackChunk len = do
   putByteString "MTrk"
   putWord32be   len    -- chunk size
 
+{- Set tempo
+
+    [00]  [ff]  [51]  [03]  [07 a1 20]
+    time  meta  tempo size  500k=120bpm
+-}
+setTempoEvent :: Put
+setTempoEvent = do
+  putWord8 0x00        -- time (0)
+  putWord8 0xff        -- meta event
+  putWord8 0x51        -- we're setting tempo
+  putWord8 0x03        -- size of arguments (3)
+  putWord8 0x07        -- tempo (in µs/quarter note)
+  putWord8 0xa1
+  putWord8 0x20        -- TODO: 3-byte nums (500,000)
+
+{- Key signature
+
+    [00]  [ff]  [59]  [02]  [00]  [00]
+    time  meta  ksig  size  key   scal
+                            (C)   (maj)
+-}
+setKeySignatureEvent :: Put
+setKeySignatureEvent = do
+  putWord8 0x00        -- time (0)
+  putWord8 0xff        -- meta event
+  putWord8 0x59        -- key signature event
+  putWord8 0x02        -- size of arguments
+  putWord8 0x00        -- key in num of sharps+/flats- (C)
+  putWord8 0x00        -- scale 0=major
+
+{- Time signature
+
+    [00]  [ff]  [58]  [04]  [04]  [02]  [30]  [08]
+    time  meta  tsig  size  numer denom metro 32nds
+                            (4)  (2^2=4) (48) (8/32 in q.note)
+-}
+setTimeSignatureEvent :: Put
+setTimeSignatureEvent = do
+  putWord8 0x00        -- time (0)
+  putWord8 0xff        -- meta event
+  putWord8 0x58        -- time signature event
+  putWord8 0x04        -- size of arguments
+  putWord8 0x04        -- numerator (4)
+  putWord8 0x02        -- denominator (as 2^x)
+  putWord8 0x30        -- metronome (?)
+  putWord8 0x08        -- num of 32nd notes to a beat
+
 noteOnEvent :: Put
 noteOnEvent = do
-  putWord8 0           -- delta time (Variable Length Value)
+  putWord8 1           -- delta time (TODO: Variable Length Value)
   putWord8 0x90        -- 0x9_ = "Note on", 0x_0 = channel 0
   putWord8 60          -- middle C
   putWord8 127         -- max velocity
 
 noteOffEvent :: Put
 noteOffEvent = do
---  putWord8 0xFF        -- delta time (Variable Length Value)
-  putWord16be 0xFFFF
+  putWord16be 0x816f   -- TODO: var length (239)
   putWord8 0x80        -- 0x8_ = "Note off", 0x_0 = channel 0
   putWord8 60          -- middle C
   putWord8 127         -- max velocity
 
 midiFile = do
   writeMidiHeader
-  writeTrackChunk 4
-  noteOnEvent
-  writeTrackChunk 5
-  noteOffEvent
+  writeTrackChunk 34    -- sizes of following events:
+  setTempoEvent         -- size 7
+  setKeySignatureEvent  -- size 6
+  setTimeSignatureEvent -- size 8
+  noteOnEvent           -- size 4
+  noteOffEvent          -- size 5
+  trackEndEvent         -- size 4
 
 main = BL.putStr $ runPut midiFile

@@ -2,10 +2,10 @@
 
 module Midi where
 
+import BitTools
 import Data.Binary.Put
-import Data.Bits ((.&.))
+import Data.Bits ((.&.), setBit, shiftR)
 import Data.Word
-import Data.ByteString.Char8
 import qualified Data.ByteString.Lazy as BL
 
 -- These are somewhat like UTF-8 multibyte characters, if the high bit
@@ -18,7 +18,7 @@ import qualified Data.ByteString.Lazy as BL
 -- ...
 -- 16,382 == 1111 1111  0111 1110 (0xFF 0x7E)
 -- 16,383 == 1111 1111  0111 1111 (0xFF 0x7F)
-varLenQuantity :: Int -> Int
+varLenQuantity :: Int -> [Word8]
 varLenQuantity n
   | n < 0     = undefined -- fix
   | n < 2^7   = pack7Bits n
@@ -29,28 +29,28 @@ varLenQuantity n
 
 -- sets the high bit of the first byte (signifies multibyte)
 multiByte :: [Word8] -> [Word8]
-multibyte (x:xs) = setBit x 8 : xs
+multiByte (x:xs) = setBit x 7 : xs
+
+mask :: Word8
+mask = fromIntegral 0x7f
 
 pack7Bits :: Int -> [Word8]
-pack7Bits n = [n .&. 0x7f]
+pack7Bits n = [fromIntegral n .&. mask]            -- n & 0x7f (01111111b)
 
 pack14Bits :: Int -> [Word8]
-pack14Bits n = [ shiftR (n .&. 0x3f80) 7
-               , pack7Bits n
-               ]
+pack14Bits n = fromIntegral (shiftR n 7) .&. mask  -- (n >> 7) & 0x7f
+             : pack7Bits n
 
 pack21Bits :: Int -> [Word8]
-pack21Bits n = [ shiftR (n .&. 0x1fc000) 14
-               , pack14Bits n
-               , pack7Bits n
-               ]
+pack21Bits n = fromIntegral (shiftR n 14) .&. mask -- (n >> 14) & 0x7f
+             : pack14Bits n
+            ++ pack7Bits n
 
 pack28Bits :: Int -> [Word8]
-pack28Bits n = [ shiftR (n .&. 0x0fe00000) 21
-               , pack21Bits n
-               , pack14Bits n
-               , pack7Bits n
-               ]
+pack28Bits n = fromIntegral (shiftR n 21) .&. mask -- (n >> 21) & 0x7f
+             : pack21Bits n
+            ++ pack14Bits n
+            ++ pack7Bits n
 
 writeMidiHeader :: Put
 writeMidiHeader = do
@@ -125,6 +125,19 @@ noteOffEvent = do
   putWord8 0x80        -- 0x8_ = "Note off", 0x_0 = channel 0
   putWord8 60          -- middle C
   putWord8 127         -- max velocity
+
+{- End of track
+
+   [1a]  [ff]  [2f]  [00]
+   time  meta  eot   size
+   (26)
+-}
+trackEndEvent :: Put
+trackEndEvent = do
+  putWord8 0x1a        -- time (26)
+  putWord8 0xff        -- meta event
+  putWord8 0x2f        -- end of track
+  putWord8 0x00        -- size
 
 midiFile = do
   writeMidiHeader

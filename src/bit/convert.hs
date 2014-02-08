@@ -1,7 +1,6 @@
-module BitTools (toHex, toBin) where
+module Bit.Convert (toHex, toBin) where
 
-import Data.Bits
-import Data.Word
+import Data.Bits (Bits, (.&.), bit, bitSize, shiftR, bit)
 
 toHex :: (Integral a, Bits a) => a -> String
 toHex num = "0x" ++ map showNybble indices

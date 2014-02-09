@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Midi.Event where
+module Event.Event where
 
 import Data.Binary.Put (Put, putByteString, putWord8, putWord16be, putWord32be)
 import Data.Word (Word32)
@@ -31,20 +31,6 @@ setTempoEvent = do
   putWord8 0x07        -- tempo (in µs/quarter note)
   putWord8 0xa1
   putWord8 0x20        -- TODO: 3-byte nums (500,000)
-
-noteOnEvent :: Put
-noteOnEvent = do
-  putWord8 1           -- delta time (TODO: Variable Length Value)
-  putWord8 0x90        -- 0x9_ = "Note on", 0x_0 = channel 0
-  putWord8 60          -- middle C
-  putWord8 105         -- max velocity
-
-noteOffEvent :: Put
-noteOffEvent = do
-  putWord16be 0x816f   -- TODO: var length (239)
-  putWord8 0x80        -- 0x8_ = "Note off", 0x_0 = channel 0
-  putWord8 60          -- middle C
-  putWord8 0           -- max velocity
 
 -- End of track
 --

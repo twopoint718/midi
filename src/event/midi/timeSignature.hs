@@ -1,4 +1,4 @@
-module Midi.TimeSignature
+module Event.Midi.TimeSignature
 ( setTimeSignatureEvent
 ) where
 

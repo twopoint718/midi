@@ -32,36 +32,6 @@ setTempoEvent = do
   putWord8 0xa1
   putWord8 0x20        -- TODO: 3-byte nums (500,000)
 
--- Key signature
---
--- [00] [ff] [59] [02] [00] [00]
--- time meta ksig size key  scal
---                     (C)  (maj)
-setKeySignatureEvent :: Put
-setKeySignatureEvent = do
-  putWord8 0x00        -- time (0)
-  putWord8 0xff        -- meta event
-  putWord8 0x59        -- key signature event
-  putWord8 0x02        -- size of arguments
-  putWord8 0x00        -- key in num of sharps+/flats- (C)
-  putWord8 0x00        -- scale 0=major
-
--- Time signature
-
--- [00] [ff] [58] [04] [04]  [02]    [30]  [08]
--- time meta tsig size numer denom   metro 32nds
---                     (4)   (2^2=4) (48)  (8/32 in q.note)
-setTimeSignatureEvent :: Put
-setTimeSignatureEvent = do
-  putWord8 0x00        -- time (0)
-  putWord8 0xff        -- meta event
-  putWord8 0x58        -- time signature event
-  putWord8 0x04        -- size of arguments
-  putWord8 0x04        -- numerator (4)
-  putWord8 0x02        -- denominator (as 2^x)
-  putWord8 0x30        -- metronome (?)
-  putWord8 0x08        -- num of 32nd notes to a beat
-
 noteOnEvent :: Put
 noteOnEvent = do
   putWord8 1           -- delta time (TODO: Variable Length Value)

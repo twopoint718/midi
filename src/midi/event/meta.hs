@@ -45,7 +45,7 @@ data Scale = Major
 
 setKeySignatureEvent :: Key -> Scale -> Put
 setKeySignatureEvent key scale = do
-    putWord8 0x00  -- time (0)
+    putWord8 0x00  -- delay (0)
     putWord8 0xff  -- meta event
     putWord8 0x59  -- key signature event
     putWord8 0x02  -- size of arguments
@@ -64,7 +64,7 @@ setKeySignatureEvent key scale = do
 
 setTempoEvent :: Put
 setTempoEvent = do
-  putWord8 0x00        -- time (0)
+  putWord8 0x00        -- delay (0)
   putWord8 0xff        -- meta event
   putWord8 0x51        -- we're setting tempo
   putWord8 0x03        -- size of arguments (3)
@@ -81,7 +81,7 @@ setTempoEvent = do
 
 setTimeSignatureEvent :: Int -> Int -> Put
 setTimeSignatureEvent numer denom = do
-    putWord8 0x00                 -- time (0)
+    putWord8 0x00                 -- delay (0)
     putWord8 0xff                 -- meta event
     putWord8 0x58                 -- time signature event
     putWord8 0x04                 -- size of arguments
@@ -103,7 +103,7 @@ setTimeSignatureEvent numer denom = do
 
 trackEndEvent :: Put
 trackEndEvent = do
-  putWord8 0x1a        -- time (26)
+  putWord8 0x00        -- delay (0)
   putWord8 0xff        -- meta event
   putWord8 0x2f        -- end of track
   putWord8 0x00        -- size

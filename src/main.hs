@@ -2,11 +2,12 @@ module Main where
 
 import Data.Binary.Put (runPut)
 import qualified Data.ByteString.Lazy as BL
-import Event.Midi
-import Event.Event
+import Midi.Event.Midi
+import Midi.Event.Meta
+import Midi.Chunk
 
 midiFile = do
-  writeMidiHeader
+  writeHeaderChunk
   writeTrackChunk 34           -- sizes of following events:
   setTempoEvent                -- size 7
   setKeySignatureEvent C Major -- size 6

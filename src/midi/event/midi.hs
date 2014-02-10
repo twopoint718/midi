@@ -1,8 +1,17 @@
-module Event.Midi.Note
+module Midi.Event.Midi
 ( Note(..)
 , noteOffEvent
 , noteOnEvent
 ) where
+
+{-
+  MIDI events include all of the Channel MIDI messages. In all cases the status
+  byte is nibblised, with the top nibble (ie the top 4 bits) indicating the
+  message type (0x8 to 0xE), and the lower nibble indicating the MIDI channel
+  (referred to as 'n' below).
+
+  From: http://www.somascape.org/midi/tech/mfile.html
+-}
 
 import Data.Binary.Put (Put, putWord8, putWord16be)
 import Data.Word (Word8)

@@ -2,7 +2,7 @@ module Midi.DeltaTimeSpec (main, spec) where
 
 import Control.Monad (forM_)
 import Data.Word (Word8)
-import Midi.DeltaTime (toMultiByte)
+import Midi.DeltaTime (DeltaTime(..), deltaTime)
 import Test.Hspec
 
 main :: IO ()
@@ -13,7 +13,7 @@ spec = do
   describe "toMultiByte" $ do
     forM_ multiByteTranslations $ \(original, translated) ->
       it ("tranlates " ++ show original ++ " into " ++ show translated) $ do
-        toMultiByte original `shouldBe` translated
+        deltaTime original `shouldBe` DeltaTime translated
 
 multiByteTranslations :: [(Int, [Word8])]
 multiByteTranslations =

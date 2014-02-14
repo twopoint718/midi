@@ -9,5 +9,5 @@ class Streaming a where
   putsStream :: a -> Put
   putsStream s = forM_ (wordsFor s) putWord8
 
-convert :: (Enum a) => a -> Word8
-convert = fromIntegral . fromEnum
+toWord8 :: (Enum a) => a -> Word8
+toWord8 = fromIntegral . fromEnum

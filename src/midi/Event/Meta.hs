@@ -41,8 +41,8 @@ wordsFor' EndTrack =
 wordsFor' (SetKeySignature key scale) =
   [ 0x59                -- key signature event
   , 0x02                -- size of arguments
-  , convert key         -- key signature
-  , convert scale ]     -- scale (major/minor)
+  , toWord8 key         -- key signature
+  , toWord8 scale ]     -- scale (major/minor)
 
 -- TODO: this needs more research
 wordsFor' (SetTempo tempo) =

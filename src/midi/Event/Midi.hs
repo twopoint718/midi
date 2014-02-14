@@ -26,10 +26,10 @@ instance Streaming MidiEvent where
 
   wordsFor (NoteOn note) =
     [ 0x00                -- on channel 1
-    , convert note        -- note
+    , toWord8 note        -- note
     , 0 ]                 -- min velocity
 
   wordsFor (NoteOff note) =
     [ 0x00                -- on channel 1
-    , convert note        -- note
+    , toWord8 note        -- note
     , 0 ]                 -- min velocity

@@ -1,8 +1,4 @@
-module Midi.Event.Meta
-( Event (..)
-, Key (..)
-, Scale (..)
-) where
+module Midi.Event where
 
 import Data.Binary.Put (Put, putWord8)
 import Control.Monad (forM_)

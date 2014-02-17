@@ -4,6 +4,7 @@ module Midi.DeltaTime
 ) where
 
 import Data.Word (Word8)
+import Midi.Event
 
 newtype DeltaTime = DeltaTime { getDeltaTime :: [Word8] }
                     deriving (Eq, Show)

@@ -6,8 +6,7 @@ module Midi.File
 
 import Data.Binary.Put (Put, putByteString, putWord16be, putWord32be, runPut)
 import qualified Data.ByteString.Lazy as BL
-import Midi.ByteStream (putsStream)
-import Midi.Event.Meta (MetaEvent(EndTrack))
+import Midi.Event (Event(EndTrack), putEvent)
 
 data Chunk = Header
            | Track Int
@@ -17,7 +16,7 @@ midi events = BL.putStr . runPut $ do
   putChunk Header
   putChunk $ Track 0
   events
-  putsStream EndTrack
+  putEvent EndTrack
 
 putChunk :: Chunk -> Put
 

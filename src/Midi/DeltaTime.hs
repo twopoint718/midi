@@ -1,8 +1,11 @@
 module Midi.DeltaTime
 ( DeltaTime(..)
 , deltaTime
+, putDeltaTime
 ) where
 
+import Control.Monad (forM_)
+import Data.Binary.Put (Put, putWord8)
 import Data.Word (Word8)
 import Midi.Event
 
@@ -39,6 +42,9 @@ deltaTime n = DeltaTime $ d ([] ++) n (highestPower n)
       | pow > 0 = d (bytes . ([fromIntegral $ 128+t] ++)) r (pow-1)
       | otherwise = bytes [fromIntegral remain]
       where (t,r) = divMod remain $ 128^pow
+
+putDeltaTime :: DeltaTime -> Put
+putDeltaTime (DeltaTime t) = forM_ t putWord8
 
 highestPower :: Int -> Int
 highestPower n = h n 0

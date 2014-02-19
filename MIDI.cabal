@@ -1,0 +1,36 @@
+name:                 midi
+version:              0.1.0.0
+synopsis:             a low-level MIDI library in Haskell
+homepage:             https://github.com/twopoint718/midi
+license:              BSD3
+license-file:         LICENSE
+author:               Chris Wilson
+maintainer:           no-reply@go.away
+category:             Sound
+build-type:           Simple
+extra-source-files:   README.md
+cabal-version:        >=1.10
+
+library
+  build-depends:      base >=4.6 && <4.7,
+                      bytestring,
+                      binary
+  default-language:   Haskell2010
+
+executable            hmidi
+  main-is:            Main.hs
+  build-depends:      base >=4.6 && <4.7,
+                      bytestring,
+                      binary
+  hs-source-dirs:     src
+  default-language:   Haskell2010
+
+test-suite            spec
+  hs-source-dirs:     src, test
+  main-is:            Spec.hs
+  build-depends:      base >=4.6 && <4.7,
+                      hspec >=1.8 && <1.9,
+                      bytestring,
+                      binary
+  type:               exitcode-stdio-1.0
+  default-language:   Haskell2010
